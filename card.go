@@ -58,7 +58,7 @@ func (c Card) String() string {
 	return fmt.Sprintf("%s of %ss", c.Rank.String(), c.Suit.String())
 }
 
-func New1(opts ...func([]Card) []Card) []Card {
+func New(opts ...func([]Card) []Card) []Card {
 	var cards []Card
 	for _, rank := range ranks {
 		for _, suit := range suits {
@@ -97,11 +97,6 @@ func absRank(c Card) int {
 }
 
 func Shuffle(cards []Card) []Card {
-	rand.Shuffle(len(cards), func(i, j int) { cards[i], cards[j] = cards[j], cards[i] })
-	return cards
-}
-
-func Shuffle1(cards []Card) []Card {
 	ret := make([]Card, len(cards))
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 	perm := r.Perm(len(cards))

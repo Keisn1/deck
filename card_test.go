@@ -16,28 +16,28 @@ func ExampleCard() {
 func TestNew(t *testing.T) {
 	t.Run("Deck is of the right size", func(t *testing.T) {
 		want := 52
-		got := len(New1())
+		got := len(New())
 		if got != want {
-			t.Errorf("len(New1()) = \"%v\"; want \"%v\"", got, want)
+			t.Errorf("len(New()) = \"%v\"; want \"%v\"", got, want)
 		}
 	})
 	t.Run("Expect Ace of Diamonds as first Card (DefaultSort)", func(t *testing.T) {
 		want := Card{Rank: Ace, Suit: Diamond}
-		got := New1(DefaultSort)[0]
+		got := New(DefaultSort)[0]
 		if got != want {
-			t.Errorf("New1(DefaultSort)[0] = \"%v\"; want \"%v\"", got.String(), want.String())
+			t.Errorf("New(DefaultSort)[0] = \"%v\"; want \"%v\"", got.String(), want.String())
 		}
 	})
 	t.Run("Expect Ace of Diamonds as first Card (SortFunction)", func(t *testing.T) {
 		want := Card{Rank: Ace, Suit: Diamond}
-		got := New1(Sort(Less))[0]
+		got := New(Sort(Less))[0]
 		if got != want {
-			t.Errorf("New1(Sort(Less))[0] = \"%v\"; want \"%v\"", got.String(), want.String())
+			t.Errorf("New(Sort(Less))[0] = \"%v\"; want \"%v\"", got.String(), want.String())
 		}
 	})
 	t.Run("Test nbr of Jokers in deck", func(t *testing.T) {
 		want := 10
-		deck := New1(Jokers(10))
+		deck := New(Jokers(10))
 		count := 0
 		for _, c := range deck {
 			if c.Suit == Joker {
@@ -49,7 +49,7 @@ func TestNew(t *testing.T) {
 		}
 	})
 	t.Run("No Rank in Deck", func(t *testing.T) {
-		deck := New1(Filter(func(c Card) bool { return c.Rank == Two || c.Rank == Five }))
+		deck := New(Filter(func(c Card) bool { return c.Rank == Two || c.Rank == Five }))
 		for _, c := range deck {
 			if c.Rank == Two || c.Rank == Five {
 				t.Errorf("Found %s in Deck, don't want %v", c.String(), []Rank{Two, Five})
@@ -58,9 +58,9 @@ func TestNew(t *testing.T) {
 	})
 	t.Run("No Rank in Deck", func(t *testing.T) {
 		want := 4 * 52
-		got := len(New1(MultipleDecks(4)))
+		got := len(New(MultipleDecks(4)))
 		if got != want {
-			t.Errorf("len(New1(MultipleDecks(4))) = \"%v\"; want \"%v\"", got, want)
+			t.Errorf("len(New(MultipleDecks(4))) = \"%v\"; want \"%v\"", got, want)
 		}
 	})
 }
