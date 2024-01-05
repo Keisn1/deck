@@ -6,23 +6,12 @@ import (
 )
 
 func main() {
-	d := deck.New(deck.WithSorting(deck.DefaultComp))
-	for _, c := range d {
-		fmt.Println(c.String())
-	}
-
-	d = deck.New1(deck.Sort(deck.Less))
-	for _, c := range d {
-		fmt.Println(c.String())
-	}
-
-	d = deck.New1(deck.Shuffle)
-	for _, c := range d {
-		fmt.Println(c.String())
-	}
-
-	d = deck.New1(deck.Shuffle1)
-	for _, c := range d {
-		fmt.Println(c.String())
-	}
+	opts := deck.NewOpts().
+		WithSort(deck.AbsRank).
+		WithReverse().
+		WithJokers(4).
+		WithFilterRanks([]deck.Rank{deck.Ace}).
+		WithFilterSuits([]deck.Suit{deck.Diamond}).
+		WithMultipleDecks(4).
+		DoShuffle()
 }

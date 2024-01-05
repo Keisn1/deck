@@ -68,7 +68,7 @@ type Opts struct {
 	WithShuffle     bool
 }
 
-func getDefaultOpts() Opts {
+func NewOpts() Opts {
 	return Opts{
 		rankFuncForSort: AbsRank,
 		Reverse:         false,
@@ -80,66 +80,54 @@ func getDefaultOpts() Opts {
 	}
 }
 
+func (o Opts) WithSort(rankFuncForSort func(c Card) int) Opts {
+	o.rankFuncForSort = rankFuncForSort
+	return o
+}
+
+func (o Opts) WithReverse() Opts {
+	o.Reverse = true
+	return o
+}
+
+func (o Opts) WithJokers(nbrOfJokers int) Opts {
+	o.NbrOfJokers = nbrOfJokers
+	return o
+}
+
+func (o Opts) WithNbrOfDecks(nbrOfDecks int) Opts {
+	o.NbrOfDecks = nbrOfDecks
+	return o
+}
+
+func (o Opts) WithFilterSuits(suitsToFilter []Suit) Opts {
+	o.SuitsToFilter = suitsToFilter
+	return o
+}
+
+func (o Opts) WithFilterRanks(ranksToFilter []Rank) Opts {
+	o.RanksToFilter = ranksToFilter
+	return o
+}
+
+func (o Opts) DoShuffle() Opts {
+	o.WithShuffle = true
+	return o
+}
+
+func (o Opts) WithMultipleDecks(nbrOfDecks int) Opts {
+	o.NbrOfDecks = nbrOfDecks
+	return o
+}
+
 type OptFunc func(*Opts)
 
-func New(optFuncs ...OptFunc) []Card {
-	cards := getDefaultCards()
-	opts := getDefaultOpts()
-
-	for _, optFunc := range optFuncs {
-		optFunc(&opts)
-	}
-
-	cards = applyOpts(cards, opts)
-	return cards
+func New() []Card {
+	return applyOpts(getDefaultCards(), NewOpts())
 }
 
-func WithSort(rankFuncForSort func(c Card) int) OptFunc {
-	return func(o *Opts) {
-		o.rankFuncForSort = rankFuncForSort
-	}
-}
-
-func WithReverse() OptFunc {
-	return func(o *Opts) {
-		o.Reverse = true
-	}
-}
-
-func WithJokers(nbrOfJokers int) OptFunc {
-	return func(o *Opts) {
-		o.NbrOfJokers = nbrOfJokers
-	}
-}
-
-func WithNbrOfDecks(nbrOfDecks int) OptFunc {
-	return func(o *Opts) {
-		o.NbrOfDecks = nbrOfDecks
-	}
-}
-
-func WithFilterSuits(suitsToFilter []Suit) OptFunc {
-	return func(o *Opts) {
-		o.SuitsToFilter = suitsToFilter
-	}
-}
-
-func WithFilterRanks(ranksToFilter []Rank) OptFunc {
-	return func(o *Opts) {
-		o.RanksToFilter = ranksToFilter
-	}
-}
-
-func WithShuffle(withShuffle bool) OptFunc {
-	return func(o *Opts) {
-		o.WithShuffle = withShuffle
-	}
-}
-
-func WithMultipleDecks(nbrOfDecks int) OptFunc {
-	return func(o *Opts) {
-		o.NbrOfDecks = nbrOfDecks
-	}
+func NewWithOpts(opts Opts) []Card {
+	return applyOpts(getDefaultCards(), opts)
 }
 
 func getDefaultCards() (cards []Card) {
@@ -154,6 +142,14 @@ func getDefaultCards() (cards []Card) {
 	return
 }
 
+func getRankFilter(rank Rank) func(c Card) bool {
+	return func(c Card) bool { return c.Rank == rank }
+}
+
+func getSuitFilter(suit Suit) func(c Card) bool {
+	return func(c Card) bool { return c.Suit == suit }
+}
+
 func applyOpts(cards []Card, opts Opts) []Card {
 	cards = applyJokers(opts.NbrOfJokers)(cards)
 	cards = applyMultipleDecks(opts.NbrOfDecks)(cards)
@@ -163,15 +159,11 @@ func applyOpts(cards []Card, opts Opts) []Card {
 	}
 
 	for _, rank := range opts.RanksToFilter {
-		cards = applyFilter(
-			func(c Card) bool { return c.Rank == rank },
-		)(cards)
+		cards = applyFilter(getRankFilter(rank))(cards)
 	}
 
 	for _, suit := range opts.SuitsToFilter {
-		cards = applyFilter(
-			func(c Card) bool { return c.Suit == suit },
-		)(cards)
+		cards = applyFilter(getSuitFilter(suit))(cards)
 	}
 
 	comp := getCompFunc(opts)
