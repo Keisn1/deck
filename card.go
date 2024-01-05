@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
-	"time"
+	// "time"
 )
 
 type Suit uint8
@@ -58,8 +58,7 @@ func (c Card) String() string {
 	return fmt.Sprintf("%s of %ss", c.Rank.String(), c.Suit.String())
 }
 
-func New1(opts ...func([]Card) []Card) []Card {
-	var cards []Card
+func defaultCards() (cards []Card) {
 	for _, rank := range ranks {
 		for _, suit := range suits {
 			cards = append(cards, Card{
@@ -68,10 +67,67 @@ func New1(opts ...func([]Card) []Card) []Card {
 			})
 		}
 	}
-	for _, opt := range opts {
-		cards = opt(cards)
+	return
+}
+
+func New(optFuncs ...func([]Card) []Card) []Card {
+	cards := defaultCards()
+	defaultOps := DefaultOpts()
+
+	// for _, opt := range opts {
+	// 	cards = opt(cards)
+	// }
+
+	cards = Jokers(defaultOps.NbrOfJokers)(cards)
+	cards = MultipleDecks(defaultOps.NbrOfDecks)(cards)
+	if defaultOps.Shuffle {
+		cards = Shuffle(cards)
 	}
+	for _, rank := range defaultOps.FilterRanks {
+		cards = Filter(
+			func(c Card) bool { return c.Rank == rank },
+		)(cards)
+	}
+
+	for _, suit := range defaultOps.FilterSuits {
+		cards = Filter(
+			func(c Card) bool { return c.Suit == suit },
+		)(cards)
+	}
+
+	less := func(cards []Card) func(i, j int) bool {
+		return func(i, j int) bool {
+			return defaultOps.Sort(cards[i]) < defaultOps.Sort(cards[j])
+		}
+	}
+
+	cards = Sort(less)(cards)
+
 	return cards
+}
+
+func applyOpts(cards []Card) []Card {
+
+}
+
+type Opts struct {
+	NbrOfJokers int
+	NbrOfDecks  int
+	Shuffle     bool
+	FilterSuits []Suit
+	FilterRanks []Rank
+	Sort        func(c Card) int
+}
+
+func DefaultOpts() Opts {
+	return Opts{
+		NbrOfJokers: 0,
+		NbrOfDecks:  1,
+		Shuffle:     false,
+		FilterSuits: []Suit{},
+		FilterRanks: []Rank{},
+		Sort:        absRank,
+	}
 }
 
 func DefaultSort(cards []Card) []Card {
@@ -101,15 +157,15 @@ func Shuffle(cards []Card) []Card {
 	return cards
 }
 
-func Shuffle1(cards []Card) []Card {
-	ret := make([]Card, len(cards))
-	r := rand.New(rand.NewSource(time.Now().Unix()))
-	perm := r.Perm(len(cards))
-	for i, j := range perm {
-		ret[i] = cards[j]
-	}
-	return ret
-}
+// func Shuffle1(cards []Card) []Card {
+// 	ret := make([]Card, len(cards))
+// 	r := rand.New(rand.NewSource(time.Now().Unix()))
+// 	perm := r.Perm(len(cards))
+// 	for i, j := range perm {
+// 		ret[i] = cards[j]
+// 	}
+// 	return ret
+// }
 
 func Jokers(nbr int) func(cards []Card) []Card {
 	return func(cards []Card) []Card {
